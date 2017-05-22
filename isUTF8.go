@@ -145,6 +145,8 @@ func fileIsUTF8(fname string) bool {
   err = unix.Fstat(f, &sbuf)
   if err != nil {
     log.Fatalf("Fstat: %s: %s", fname, err)
+  } else if (sbuf.Mode & unix.S_IFREG) == 0 {
+    log.Fatalf("%s: not a regular file", fname)
   }
 
   fileSize := sbuf.Size
