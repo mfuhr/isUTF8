@@ -13,3 +13,9 @@ func TestLatin1(t *testing.T) {
     t.Fail()
   }
 }
+
+func TestASCII(t *testing.T) {
+  if isUTF8 := fileIsUTF8("test_ascii.txt"); !isUTF8 {
+    t.Fail()
+  }
+}
