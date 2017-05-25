@@ -19,3 +19,10 @@ func TestASCII(t *testing.T) {
     t.Fail()
   }
 }
+
+func TestAllUTF8(t *testing.T) {
+  if isUTF8 := fileIsUTF8("test_all_utf8.txt"); !isUTF8 {
+    t.Fail()
+  }
+}
+
