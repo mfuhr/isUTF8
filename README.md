@@ -27,12 +27,12 @@ go test
 
 ## Examples
 ```
-$ ./isUTF8 test_utf8.txt
-true test_utf8.txt
+$ ./isUTF8 testdata/test_utf8.txt
+true testdata/test_utf8.txt
 $ echo $?
 0
-$ ./isUTF8 test_latin1.txt
-false test_latin1.txt
+$ ./isUTF8 testdata/test_latin1.txt
+false testdata/test_latin1.txt
 $ echo $?
 1
 ```
