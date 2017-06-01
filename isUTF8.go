@@ -42,86 +42,57 @@ func bufferIsUTF8(fd int, offset int64, length int, checkSize int) (bool, int64)
 	isUTF8 := true
 
 	var i int = int(idxStart)
+
+    bufLoop:
 	for i < idxEnd {
-		if buf[i] <= 0x7f { // U+0000..U+007F
-			i++
-		} else if buf[i] >= 0xc2 && buf[i] <= 0xdf { // U+0080..U+07FF
-			if i+1 < bufSize &&
-				buf[i+1] >= 0x80 && buf[i+1] <= 0xbf {
+		switch {
+			case buf[i] <= 0x7f: // U+0000..U+007F
+				i++
+			case buf[i] >= 0xc2 && buf[i] <= 0xdf && // U+0080..U+07FF
+			     i + 1 < bufSize &&
+				 buf[i + 1] >= 0x80 && buf[i + 1] <= 0xbf:
 				i += 2
-			} else {
-				isUTF8 = false
-				break
-			}
-		} else if buf[i] == 0xe0 { // U+0800..U+0FFF
-			if i+2 < bufSize &&
-				buf[i+1] >= 0xa0 && buf[i+1] <= 0xbf &&
-				buf[i+2] >= 0x80 && buf[i+2] <= 0xbf {
+			case buf[i] == 0xe0 && // U+0800..U+0FFF
+			     i + 2 < bufSize &&
+				 buf[i + 1] >= 0xa0 && buf[i + 1] <= 0xbf &&
+				 buf[i + 2] >= 0x80 && buf[i + 2] <= 0xbf:
 				i += 3
-			} else {
-				isUTF8 = false
-				break
-			}
-		} else if buf[i] >= 0xe1 && buf[i] <= 0xec { // U+1000..U+CFFF
-			if i+2 < bufSize &&
-				buf[i+1] >= 0x80 && buf[i+1] <= 0xbf &&
-				buf[i+2] >= 0x80 && buf[i+2] <= 0xbf {
+			case buf[i] >= 0xe1 && buf[i] <= 0xec && // U+1000..U+CFFF
+			     i + 2 < bufSize &&
+				 buf[i + 1] >= 0x80 && buf[i + 1] <= 0xbf &&
+				 buf[i + 2] >= 0x80 && buf[i + 2] <= 0xbf:
 				i += 3
-			} else {
-				isUTF8 = false
-				break
-			}
-		} else if buf[i] == 0xed { // U+D000..U+D7FF
-			if i+2 < bufSize &&
-				buf[i+1] >= 0x80 && buf[i+1] <= 0x9f &&
-				buf[i+2] >= 0x80 && buf[i+2] <= 0xbf {
+			case buf[i] == 0xed && // U+D000..U+D7FF
+			     i + 2 < bufSize &&
+				 buf[i + 1] >= 0x80 && buf[i + 1] <= 0x9f &&
+				 buf[i + 2] >= 0x80 && buf[i + 2] <= 0xbf:
 				i += 3
-			} else {
-				isUTF8 = false
-				break
-			}
-		} else if buf[i] >= 0xee && buf[i] <= 0xef { // U+E000..U+FFFF
-			if i+2 < bufSize &&
-				buf[i+1] >= 0x80 && buf[i+1] <= 0xbf &&
-				buf[i+2] >= 0x80 && buf[i+2] <= 0xbf {
+			case buf[i] >= 0xee && buf[i] <= 0xef && // U+E000..U+FFFF
+			     i + 2 < bufSize &&
+				 buf[i + 1] >= 0x80 && buf[i + 1] <= 0xbf &&
+				 buf[i + 2] >= 0x80 && buf[i + 2] <= 0xbf:
 				i += 3
-			} else {
-				isUTF8 = false
-				break
-			}
-		} else if buf[i] == 0xf0 { // U+10000..U+3FFFF
-			if i+3 < bufSize &&
-				buf[i+1] >= 0x90 && buf[i+1] <= 0xbf &&
-				buf[i+2] >= 0x80 && buf[i+2] <= 0xbf &&
-				buf[i+3] >= 0x80 && buf[i+3] <= 0xbf {
+			case buf[i] == 0xf0 && // U+10000..U+3FFFF
+			     i + 3 < bufSize &&
+				 buf[i + 1] >= 0x90 && buf[i + 1] <= 0xbf &&
+				 buf[i + 2] >= 0x80 && buf[i + 2] <= 0xbf &&
+				 buf[i + 3] >= 0x80 && buf[i + 3] <= 0xbf:
 				i += 4
-			} else {
-				isUTF8 = false
-				break
-			}
-		} else if buf[i] >= 0xf1 && buf[i] <= 0xf3 { // U+40000..U+FFFFF
-			if i+3 < bufSize &&
-				buf[i+1] >= 0x80 && buf[i+1] <= 0xbf &&
-				buf[i+2] >= 0x80 && buf[i+2] <= 0xbf &&
-				buf[i+3] >= 0x80 && buf[i+3] <= 0xbf {
+			case buf[i] >= 0xf1 && buf[i] <= 0xf3 && // U+40000..U+FFFFF
+			     i + 3 < bufSize &&
+				 buf[i + 1] >= 0x80 && buf[i + 1] <= 0xbf &&
+				 buf[i + 2] >= 0x80 && buf[i + 2] <= 0xbf &&
+				 buf[i + 3] >= 0x80 && buf[i + 3] <= 0xbf:
 				i += 4
-			} else {
-				isUTF8 = false
-				break
-			}
-		} else if buf[i] == 0xf4 { // U+100000..U+10FFFF
-			if i+3 < bufSize &&
-				buf[i+1] >= 0x80 && buf[i+1] <= 0x8f &&
-				buf[i+2] >= 0x80 && buf[i+2] <= 0xbf &&
-				buf[i+3] >= 0x80 && buf[i+3] <= 0xbf {
+			case buf[i] == 0xf4 && // U+100000..U+10FFFF
+			     i + 3 < bufSize &&
+				 buf[i + 1] >= 0x80 && buf[i + 1] <= 0x8f &&
+				 buf[i + 2] >= 0x80 && buf[i + 2] <= 0xbf &&
+				 buf[i + 3] >= 0x80 && buf[i + 3] <= 0xbf:
 				i += 4
-			} else {
+			default:
 				isUTF8 = false
-				break
-			}
-		} else {
-			isUTF8 = false
-			break
+				break bufLoop
 		}
 	}
 
