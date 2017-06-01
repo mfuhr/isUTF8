@@ -43,56 +43,56 @@ func bufferIsUTF8(fd int, offset int64, length int, checkSize int) (bool, int64)
 
 	var i int = int(idxStart)
 
-    bufLoop:
+bufLoop:
 	for i < idxEnd {
 		switch {
-			case buf[i] <= 0x7f: // U+0000..U+007F
-				i++
-			case buf[i] >= 0xc2 && buf[i] <= 0xdf && // U+0080..U+07FF
-			     i + 1 < bufSize &&
-				 buf[i + 1] >= 0x80 && buf[i + 1] <= 0xbf:
-				i += 2
-			case buf[i] == 0xe0 && // U+0800..U+0FFF
-			     i + 2 < bufSize &&
-				 buf[i + 1] >= 0xa0 && buf[i + 1] <= 0xbf &&
-				 buf[i + 2] >= 0x80 && buf[i + 2] <= 0xbf:
-				i += 3
-			case buf[i] >= 0xe1 && buf[i] <= 0xec && // U+1000..U+CFFF
-			     i + 2 < bufSize &&
-				 buf[i + 1] >= 0x80 && buf[i + 1] <= 0xbf &&
-				 buf[i + 2] >= 0x80 && buf[i + 2] <= 0xbf:
-				i += 3
-			case buf[i] == 0xed && // U+D000..U+D7FF
-			     i + 2 < bufSize &&
-				 buf[i + 1] >= 0x80 && buf[i + 1] <= 0x9f &&
-				 buf[i + 2] >= 0x80 && buf[i + 2] <= 0xbf:
-				i += 3
-			case buf[i] >= 0xee && buf[i] <= 0xef && // U+E000..U+FFFF
-			     i + 2 < bufSize &&
-				 buf[i + 1] >= 0x80 && buf[i + 1] <= 0xbf &&
-				 buf[i + 2] >= 0x80 && buf[i + 2] <= 0xbf:
-				i += 3
-			case buf[i] == 0xf0 && // U+10000..U+3FFFF
-			     i + 3 < bufSize &&
-				 buf[i + 1] >= 0x90 && buf[i + 1] <= 0xbf &&
-				 buf[i + 2] >= 0x80 && buf[i + 2] <= 0xbf &&
-				 buf[i + 3] >= 0x80 && buf[i + 3] <= 0xbf:
-				i += 4
-			case buf[i] >= 0xf1 && buf[i] <= 0xf3 && // U+40000..U+FFFFF
-			     i + 3 < bufSize &&
-				 buf[i + 1] >= 0x80 && buf[i + 1] <= 0xbf &&
-				 buf[i + 2] >= 0x80 && buf[i + 2] <= 0xbf &&
-				 buf[i + 3] >= 0x80 && buf[i + 3] <= 0xbf:
-				i += 4
-			case buf[i] == 0xf4 && // U+100000..U+10FFFF
-			     i + 3 < bufSize &&
-				 buf[i + 1] >= 0x80 && buf[i + 1] <= 0x8f &&
-				 buf[i + 2] >= 0x80 && buf[i + 2] <= 0xbf &&
-				 buf[i + 3] >= 0x80 && buf[i + 3] <= 0xbf:
-				i += 4
-			default:
-				isUTF8 = false
-				break bufLoop
+		case buf[i] <= 0x7f: // U+0000..U+007F
+			i++
+		case buf[i] >= 0xc2 && buf[i] <= 0xdf && // U+0080..U+07FF
+			i+1 < bufSize &&
+			buf[i+1] >= 0x80 && buf[i+1] <= 0xbf:
+			i += 2
+		case buf[i] == 0xe0 && // U+0800..U+0FFF
+			i+2 < bufSize &&
+			buf[i+1] >= 0xa0 && buf[i+1] <= 0xbf &&
+			buf[i+2] >= 0x80 && buf[i+2] <= 0xbf:
+			i += 3
+		case buf[i] >= 0xe1 && buf[i] <= 0xec && // U+1000..U+CFFF
+			i+2 < bufSize &&
+			buf[i+1] >= 0x80 && buf[i+1] <= 0xbf &&
+			buf[i+2] >= 0x80 && buf[i+2] <= 0xbf:
+			i += 3
+		case buf[i] == 0xed && // U+D000..U+D7FF
+			i+2 < bufSize &&
+			buf[i+1] >= 0x80 && buf[i+1] <= 0x9f &&
+			buf[i+2] >= 0x80 && buf[i+2] <= 0xbf:
+			i += 3
+		case buf[i] >= 0xee && buf[i] <= 0xef && // U+E000..U+FFFF
+			i+2 < bufSize &&
+			buf[i+1] >= 0x80 && buf[i+1] <= 0xbf &&
+			buf[i+2] >= 0x80 && buf[i+2] <= 0xbf:
+			i += 3
+		case buf[i] == 0xf0 && // U+10000..U+3FFFF
+			i+3 < bufSize &&
+			buf[i+1] >= 0x90 && buf[i+1] <= 0xbf &&
+			buf[i+2] >= 0x80 && buf[i+2] <= 0xbf &&
+			buf[i+3] >= 0x80 && buf[i+3] <= 0xbf:
+			i += 4
+		case buf[i] >= 0xf1 && buf[i] <= 0xf3 && // U+40000..U+FFFFF
+			i+3 < bufSize &&
+			buf[i+1] >= 0x80 && buf[i+1] <= 0xbf &&
+			buf[i+2] >= 0x80 && buf[i+2] <= 0xbf &&
+			buf[i+3] >= 0x80 && buf[i+3] <= 0xbf:
+			i += 4
+		case buf[i] == 0xf4 && // U+100000..U+10FFFF
+			i+3 < bufSize &&
+			buf[i+1] >= 0x80 && buf[i+1] <= 0x8f &&
+			buf[i+2] >= 0x80 && buf[i+2] <= 0xbf &&
+			buf[i+3] >= 0x80 && buf[i+3] <= 0xbf:
+			i += 4
+		default:
+			isUTF8 = false
+			break bufLoop
 		}
 	}
 
