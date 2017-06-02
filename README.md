@@ -38,5 +38,5 @@ $ echo $?
 ```
 
 ## Status
-In active development (May 2017).  Behavior, especially the output, subject to change.
+In active development (June 2017).  Behavior, especially the output, subject to change.
 
