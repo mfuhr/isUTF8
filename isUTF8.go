@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-const MaxInt = int(^uint(0) >> 1)
+const maxInt = int(^uint(0) >> 1)
 
 //
 // The Unicode Standard
@@ -41,7 +41,7 @@ func bufferIsUTF8(fd int, offset int64, length int, checkSize int) (bool, int64)
 
 	isUTF8 := true
 
-	var i int = int(idxStart)
+	var i = int(idxStart)
 
 bufLoop:
 	for i < idxEnd {
@@ -122,7 +122,7 @@ func fileIsUTF8(fname string) bool {
 
 	fileSize := sbuf.Size
 	var mapOffset int64 = 0
-	maxMapSize := MaxInt - unix.Getpagesize() // leave room for alignment
+	maxMapSize := maxInt - unix.Getpagesize() // leave room for alignment
 	maxCharSize := 4
 
 	if maxMapSize < maxCharSize {
