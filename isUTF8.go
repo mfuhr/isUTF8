@@ -34,6 +34,12 @@ func bufferIsUTF8(fd int, offset int64, length int, checkSize int) (bool, int64)
 		log.Fatalf("Mmap(%v, %v): %s", offset, length, err)
 	}
 
+	defer func() {
+		if err = unix.Munmap(buf); err != nil {
+			log.Fatalf("Munmap: %s", err)
+		}
+	}()
+
 	bufSize := len(buf)
 	if bufSize != mapLength {
 		log.Fatalf("bufSize (%v) != mapLength (%v)", bufSize, mapLength)
@@ -96,11 +102,6 @@ bufLoop:
 		}
 	}
 
-	err = unix.Munmap(buf)
-	if err != nil {
-		log.Fatalf("Munmap: %s", err)
-	}
-
 	return isUTF8, int64(i) - idxStart
 }
 
@@ -110,7 +111,11 @@ func fileIsUTF8(fname string) bool {
 		log.Fatalf("Open: %s: %s", fname, err)
 	}
 
-	defer unix.Close(f)
+	defer func() {
+		if err := unix.Close(f); err != nil {
+			log.Fatalf("Close: %s: %s", fname, err)
+		}
+	}()
 
 	var sbuf unix.Stat_t
 	err = unix.Fstat(f, &sbuf)
@@ -121,7 +126,7 @@ func fileIsUTF8(fname string) bool {
 	}
 
 	fileSize := sbuf.Size
-	var mapOffset int64 = 0
+	mapOffset := int64(0)
 	maxMapSize := maxInt - unix.Getpagesize() // leave room for alignment
 	maxCharSize := 4
 
