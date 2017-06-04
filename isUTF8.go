@@ -47,7 +47,7 @@ func bufferIsUTF8(fd int, offset int64, length int, checkSize int) (bool, int64)
 
 	isUTF8 := true
 
-	var i = int(idxStart)
+	i := int(idxStart)
 
 bufLoop:
 	for i < idxEnd {
