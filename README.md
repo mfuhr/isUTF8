@@ -2,7 +2,7 @@
 
 Detect whether a file is well-formed UTF-8 or not.
 
-isUTF8 is written in [Go](https://golang.org/) and uses [memory mapped files](https://en.wikipedia.org/wiki/Memory-mapped_file) to run as quickly as possible.  It uses the [golang.org/x/sys/unix](https://godoc.org/golang.org/x/sys/unix) package and will probably run only on Unix-like systems (e.g., MacOS, Linux).
+isUTF8 is written in [Go](https://golang.org/) and uses [memory mapped files](https://en.wikipedia.org/wiki/Memory-mapped_file) to run as quickly as possible.  It uses the [golang.org/x/sys/unix](https://godoc.org/golang.org/x/sys/unix) package and will probably run only on Unix-like systems (e.g., MacOS, Linux).  A portable and simpler but slower approach could use [utf8.ValidString](https://golang.org/pkg/unicode/utf8/#ValidString).
 
 On a 2016 MacBook Pro, isUTF8 checked a 1GB file in around 1 second, about 30% faster than a nearly identical C program compiled with gcc's ‑O3 flag (run times will vary depending on the system and how much of the file is already in memory cache).
 
