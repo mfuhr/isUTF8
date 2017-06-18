@@ -1,13 +1,15 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"golang.org/x/sys/unix"
 	"log"
 	"os"
 )
 
-const maxInt = int(^uint(0) >> 1)
+const sysMaxInt = int(^uint(0) >> 1)
+const maxCharSize = 4
 
 //
 // The Unicode Standard
@@ -105,36 +107,34 @@ bufLoop:
 	return isUTF8, int64(i) - idxStart
 }
 
-func fileIsUTF8(fname string) bool {
-	f, err := unix.Open(fname, unix.O_RDONLY, 0)
+func fileIsUTF8(fileName string, maxInt int) bool {
+	f, err := unix.Open(fileName, unix.O_RDONLY, 0)
 	if err != nil {
-		log.Fatalf("Open: %s: %s", fname, err)
+		log.Fatalf("Open: %s: %s", fileName, err)
 	}
 
 	defer func() {
 		if err := unix.Close(f); err != nil {
-			log.Fatalf("Close: %s: %s", fname, err)
+			log.Fatalf("Close: %s: %s", fileName, err)
 		}
 	}()
 
 	var sbuf unix.Stat_t
 	err = unix.Fstat(f, &sbuf)
 	if err != nil {
-		log.Fatalf("Fstat: %s: %s", fname, err)
+		log.Fatalf("Fstat: %s: %s", fileName, err)
 	} else if (sbuf.Mode & unix.S_IFREG) == 0 {
-		log.Fatalf("%s: not a regular file", fname)
+		log.Fatalf("%s: not a regular file", fileName)
 	}
 
 	fileSize := sbuf.Size
-	mapOffset := int64(0)
-	maxMapSize := maxInt - unix.Getpagesize() // leave room for alignment
-	maxCharSize := 4
 
+	maxMapSize := maxInt - unix.Getpagesize() // leave room for alignment
 	if maxMapSize < maxCharSize {
 		log.Fatalf("maxMapSize (%v) < maxCharSize (%v)", maxMapSize, maxCharSize)
 	}
 
-	for mapOffset < fileSize {
+	for mapOffset := int64(0); mapOffset < fileSize; {
 		bytesLeft := fileSize - mapOffset
 
 		var mapSize int
@@ -166,6 +166,11 @@ func fileIsUTF8(fname string) bool {
 }
 
 func main() {
+	var maxInt int
+
+	flag.IntVar(&maxInt, "-maxint", sysMaxInt, "maximum integer size (intended only for testing)")
+	flag.Parse()
+
 	exitCode := 0
 
 	if len(os.Args) > 2 {
@@ -173,7 +178,7 @@ func main() {
 	}
 
 	for _, arg := range os.Args[1:] {
-		isUTF8 := fileIsUTF8(arg)
+		isUTF8 := fileIsUTF8(arg, maxInt)
 		fmt.Printf("%v %s\n", isUTF8, arg)
 		if !isUTF8 {
 			exitCode = 1

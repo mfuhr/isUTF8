@@ -1,6 +1,7 @@
 package main
 
 import (
+	"golang.org/x/sys/unix"
 	"path/filepath"
 	"testing"
 )
@@ -8,7 +9,8 @@ import (
 const testDir = "testdata"
 
 func testFile(t *testing.T, fileName string, expectedResult bool) {
-	if fileIsUTF8(filepath.Join(testDir, fileName)) != expectedResult {
+	testMaxInt := 2 * unix.Getpagesize()
+	if fileIsUTF8(filepath.Join(testDir, fileName), testMaxInt) != expectedResult {
 		t.Fail()
 	}
 }

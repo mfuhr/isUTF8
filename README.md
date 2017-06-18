@@ -21,8 +21,10 @@ go get golang.org/x/sys/unix
 ```
 git clone https://github.com/mfuhr/isUTF8.git
 cd isUTF8
+go test -coverprofile=coverage.out
+go tool cover -func=coverage.out
+go tool cover -html=coverage.out
 go build
-go test
 ```
 
 ## Examples
