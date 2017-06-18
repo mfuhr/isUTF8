@@ -19,9 +19,9 @@ const maxCharSize = 4
 // Table 3-7. Well-Formed UTF-8 Byte Sequences
 // http://www.unicode.org/versions/Unicode9.0.0/ch03.pdf#G7404
 //
-func bufferIsUTF8(fd int, offset int64, length int, checkSize int) (bool, int64) {
+func bufferIsUTF8(fd int, offset int64, length int, checkSize int) (bool, int64, error) {
 	if checkSize > length {
-		log.Fatalf("checkSize (%v) > length (%v)", checkSize, length)
+		return false, 0, fmt.Errorf("checkSize (%v) > length (%v)", checkSize, length)
 	}
 
 	idxStart := offset % int64(unix.Getpagesize())
@@ -33,7 +33,7 @@ func bufferIsUTF8(fd int, offset int64, length int, checkSize int) (bool, int64)
 
 	buf, err := unix.Mmap(fd, mapOffset, mapLength, unix.PROT_READ, unix.MAP_PRIVATE)
 	if err != nil {
-		log.Fatalf("Mmap(%v, %v): %s", offset, length, err)
+		return false, 0, fmt.Errorf("Mmap(%v, %v): %s", offset, length, err)
 	}
 
 	defer func() {
@@ -44,7 +44,7 @@ func bufferIsUTF8(fd int, offset int64, length int, checkSize int) (bool, int64)
 
 	bufSize := len(buf)
 	if bufSize != mapLength {
-		log.Fatalf("bufSize (%v) != mapLength (%v)", bufSize, mapLength)
+		return false, 0, fmt.Errorf("bufSize (%v) != mapLength (%v)", bufSize, mapLength)
 	}
 
 	isUTF8 := true
@@ -104,34 +104,34 @@ bufLoop:
 		}
 	}
 
-	return isUTF8, int64(i) - idxStart
+	return isUTF8, int64(i) - idxStart, nil
 }
 
-func fileIsUTF8(fileName string, maxInt int) bool {
+func fileIsUTF8(fileName string, maxInt int) (bool, error) {
 	f, err := unix.Open(fileName, unix.O_RDONLY, 0)
 	if err != nil {
-		log.Fatalf("Open: %s: %s", fileName, err)
+		return false, err
 	}
 
 	defer func() {
 		if err := unix.Close(f); err != nil {
-			log.Fatalf("Close: %s: %s", fileName, err)
+			log.Fatalf("Close: %s", fileName)
 		}
 	}()
 
 	var sbuf unix.Stat_t
 	err = unix.Fstat(f, &sbuf)
 	if err != nil {
-		log.Fatalf("Fstat: %s: %s", fileName, err)
+		return false, err
 	} else if (sbuf.Mode & unix.S_IFREG) == 0 {
-		log.Fatalf("%s: not a regular file", fileName)
+		return false, fmt.Errorf("%s: not a regular file", fileName)
 	}
 
 	fileSize := sbuf.Size
 
 	maxMapSize := maxInt - unix.Getpagesize() // leave room for alignment
 	if maxMapSize < maxCharSize {
-		log.Fatalf("maxMapSize (%v) < maxCharSize (%v)", maxMapSize, maxCharSize)
+		return false, fmt.Errorf("maxMapSize (%v) < maxCharSize (%v)", maxMapSize, maxCharSize)
 	}
 
 	for mapOffset := int64(0); mapOffset < fileSize; {
@@ -151,18 +151,19 @@ func fileIsUTF8(fileName string, maxInt int) bool {
 		//fmt.Printf("fileSize=%v, mapOffset=%v, bytesLeft=%v, mapSize=%v, checkSize=%v\n",
 		//            fileSize, mapOffset, bytesLeft, mapSize, checkSize)
 
-		isUTF8, bytesChecked := bufferIsUTF8(f, mapOffset, mapSize, checkSize)
-		//fmt.Printf("isUTF8=%v, bytesChecked=%v\n", isUTF8, bytesChecked)
-
-		if !isUTF8 {
-			return false
+		isUTF8, bytesChecked, err := bufferIsUTF8(f, mapOffset, mapSize, checkSize)
+		//fmt.Printf("isUTF8=%v, bytesChecked=%v, err=%v\n", isUTF8, bytesChecked, err)
+		if err != nil {
+			return false, err
+		} else if !isUTF8 {
+			return false, nil
 		}
 
 		mapOffset += bytesChecked
 		//fmt.Printf("mapOffset=%v\n\n", mapOffset)
 	}
 
-	return true
+	return true, nil
 }
 
 func main() {
@@ -178,7 +179,10 @@ func main() {
 	}
 
 	for _, arg := range os.Args[1:] {
-		isUTF8 := fileIsUTF8(arg, maxInt)
+		isUTF8, err := fileIsUTF8(arg, maxInt)
+		if err != nil {
+			log.Fatal(err)
+		}
 		fmt.Printf("%v %s\n", isUTF8, arg)
 		if !isUTF8 {
 			exitCode = 1
