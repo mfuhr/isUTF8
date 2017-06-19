@@ -1,4 +1,8 @@
 isUTF8
+isUTF8.test
 coverage.out
+block.out
+mem.out
+cpu.out
 .DS_Store
 *.swp
