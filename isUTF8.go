@@ -170,16 +170,16 @@ func fileIsUTF8(fileName string, maxInt int) (isUTF8 bool, err error) {
 func main() {
 	var maxInt int
 
-	flag.IntVar(&maxInt, "-maxint", sysMaxInt, "maximum integer size (intended only for testing)")
+	flag.IntVar(&maxInt, "maxint", sysMaxInt, "maximum integer size (intended only for testing)")
 	flag.Parse()
 
 	exitCode := 0
 
-	if len(os.Args) > 2 {
+	if len(flag.Args()) > 1 {
 		log.Printf("warning: multiple filename arguments\n")
 	}
 
-	for _, arg := range os.Args[1:] {
+	for _, arg := range flag.Args() {
 		isUTF8, err := fileIsUTF8(arg, maxInt)
 		if err != nil {
 			log.Fatal(err)
