@@ -98,3 +98,24 @@ func TestDirectory(t *testing.T) {
 func TestMissingFile(t *testing.T) {
 	testFile(t, "no_such_file.txt", false, true)
 }
+
+func TestCheckSize(t *testing.T) {
+	_, _, err := bufferIsUTF8(0, 0, 1, 2)
+	if err == nil {
+		t.Fail()
+	}
+}
+
+func TestMmapFailure(t *testing.T) {
+	_, _, err := bufferIsUTF8(0, 0, 1, 1)
+	if err == nil {
+		t.Fail()
+	}
+}
+
+func TestMaxIntTooSmall(t *testing.T) {
+	_, err := fileIsUTF8(filepath.Join(testDir, "test_utf8.txt"), unix.Getpagesize() - 1)
+	if err == nil {
+		t.Fail()
+	}
+}
