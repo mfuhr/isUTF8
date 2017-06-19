@@ -21,10 +21,22 @@ go get golang.org/x/sys/unix
 ```
 git clone https://github.com/mfuhr/isUTF8.git
 cd isUTF8
+go test
+go build
+```
+
+To install under [$GOPATH](https://golang.org/doc/code.html#GOPATH)/bin:
+
+```
+go install
+```
+
+To see test coverage:
+
+```
 go test -coverprofile=coverage.out
 go tool cover -func=coverage.out
 go tool cover -html=coverage.out
-go build
 ```
 
 ## Examples
@@ -41,4 +53,3 @@ $ echo $?
 
 ## Status
 In active development (June 2017).  Behavior, especially the output, subject to change.
-
