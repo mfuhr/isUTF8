@@ -19,7 +19,7 @@ const maxCharSize = 4
 // Table 3-7. Well-Formed UTF-8 Byte Sequences
 // http://www.unicode.org/versions/Unicode9.0.0/ch03.pdf#G7404
 //
-func bufferIsUTF8(fd int, offset int64, length int, checkSize int) (bool, int64, error) {
+func bufferIsUTF8(fd int, offset int64, length int, checkSize int) (isUTF8 bool, bytesChecked int64, err error) {
 	if checkSize > length {
 		return false, 0, fmt.Errorf("checkSize (%v) > length (%v)", checkSize, length)
 	}
@@ -37,8 +37,9 @@ func bufferIsUTF8(fd int, offset int64, length int, checkSize int) (bool, int64,
 	}
 
 	defer func() {
-		if err = unix.Munmap(buf); err != nil {
-			log.Fatalf("Munmap: %s", err)
+		if localErr := unix.Munmap(buf); localErr != nil {
+			fmt.Fprintf(os.Stderr, "Munmap error: %v\n", localErr)
+			err = localErr
 		}
 	}()
 
@@ -47,7 +48,7 @@ func bufferIsUTF8(fd int, offset int64, length int, checkSize int) (bool, int64,
 		return false, 0, fmt.Errorf("bufSize (%v) != mapLength (%v)", bufSize, mapLength)
 	}
 
-	isUTF8 := true
+	isUTF8 = true
 
 	i := int(idxStart)
 
@@ -107,15 +108,15 @@ bufLoop:
 	return isUTF8, int64(i) - idxStart, nil
 }
 
-func fileIsUTF8(fileName string, maxInt int) (bool, error) {
+func fileIsUTF8(fileName string, maxInt int) (isUTF8 bool, err error) {
 	f, err := unix.Open(fileName, unix.O_RDONLY, 0)
 	if err != nil {
 		return false, err
 	}
 
 	defer func() {
-		if err := unix.Close(f); err != nil {
-			log.Fatalf("Close: %s", fileName)
+		if localErr := unix.Close(f); localErr != nil {
+			err = localErr
 		}
 	}()
 
