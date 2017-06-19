@@ -114,7 +114,7 @@ func TestMmapFailure(t *testing.T) {
 }
 
 func TestMaxIntTooSmall(t *testing.T) {
-	_, err := fileIsUTF8(filepath.Join(testDir, "test_utf8.txt"), unix.Getpagesize() - 1)
+	_, err := fileIsUTF8(filepath.Join(testDir, "test_utf8.txt"), unix.Getpagesize()-1)
 	if err == nil {
 		t.Fail()
 	}
