@@ -3,9 +3,10 @@ package main
 import (
 	"flag"
 	"fmt"
-	"golang.org/x/sys/unix"
 	"log"
 	"os"
+
+	"golang.org/x/sys/unix"
 )
 
 const sysMaxInt = int(^uint(0) >> 1)
