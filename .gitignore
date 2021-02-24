@@ -7,3 +7,4 @@ cpu.out
 .DS_Store
 *.swp
 *.mod
+*.sum
