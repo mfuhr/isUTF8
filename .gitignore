@@ -6,3 +6,4 @@ mem.out
 cpu.out
 .DS_Store
 *.swp
+*.mod
